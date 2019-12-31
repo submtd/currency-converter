@@ -124,13 +124,15 @@ class CurrencyConverter
         $http = new HttpRequest();
         $http->url('https://min-api.cryptocompare.com/data/price?fsym=' . $from . '&tsyms=' . $to);
         $http->header('Accept', 'application/json');
-        $response = json_decode($http->request()->getResponse());
-        if (!isset($response->$to)) {
-            if (isset($response->Type) && isset($response->Message)) {
-                throw new \Exception($response->Message, $response->Type);
+        $response = $http->request()->getResponse();
+        if (!isset(json_decode($response)->$to)) {
+            if (isset(json_decode($response)->Type) && isset(json_decode($response)->Message)) {
+                throw new \Exception(json_decode($response)->Message, json_decode($response)->Type);
             }
             throw new \Exception('Unknown error', 500);
         }
-        return (string) bcmul($amount, $response->$to, 8);
+        // super hacky way to get the price and avoid floating point precision issues
+        $price = substr($response, strpos($response, ':') + 1, -1);
+        return bcmul($amount, $price, 16);
     }
 }
