@@ -25,16 +25,24 @@ class CurrencyConverter
     protected $amount;
 
     /**
+     * Crypto compare api token
+     * @var string $token
+     */
+    protected $token;
+
+    /**
      * Class constructor
      * @param string $from
      * @param string $to
      * @param float $amount
+     * @param $token
      */
-    public function __construct(string $from = null, string $to = null, float $amount = 1)
+    public function __construct(string $from = null, string $to = null, float $amount = 1, $token = null)
     {
         $this->from($from);
         $this->to($to);
         $this->amount($amount);
+        $this->token($token);
     }
 
     /**
@@ -110,6 +118,24 @@ class CurrencyConverter
     }
 
     /**
+     * Token getter
+     * @return string|null
+     */
+    public function getToken() {
+        return $this->token;
+    }
+
+    /**
+     * Token setter.
+     * @param $token
+     * @return Submtd\CurrencyConverter\CurrencyConverter
+     */
+    public function token($token) {
+        $this->token = $token;
+        return $this;
+    }
+
+    /**
      * Convert
      * @return float
      */
@@ -122,7 +148,11 @@ class CurrencyConverter
         $amount = $amount ?? $this->getAmount();
         $this->amount($amount);
         $http = new HttpRequest();
-        $http->url('https://min-api.cryptocompare.com/data/price?fsym=' . $from . '&tsyms=' . $to);
+        $url = 'https://min-api.cryptocompare.com/data/price?fsym='.$from.'&tsyms='.$to;
+        if($token = $this->getToken()) {
+            $url .= '&api_key='.$token;
+        }
+        $http->url($url);
         $http->header('Accept', 'application/json');
         $response = $http->request()->getResponse();
         if (!isset(json_decode($response)->$to)) {
