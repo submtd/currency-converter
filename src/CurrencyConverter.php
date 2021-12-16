@@ -52,9 +52,9 @@ class CurrencyConverter
      * @param float $amount
      * @return Submtd\CurrencyConverter\CurrencyConverter
      */
-    public static function init(string $from = null, string $to = null, float $amount = 1) : CurrencyConverter
+    public static function init(string $from = null, string $to = null, float $amount = 1, $token = null) : CurrencyConverter
     {
-        return new static($from, $to, $amount);
+        return new static($from, $to, $amount, $token);
     }
 
     /**
@@ -162,7 +162,9 @@ class CurrencyConverter
             throw new \Exception('Unknown error', 500);
         }
         // super hacky way to get the price and avoid floating point precision issues
-        $price = substr($response, strpos($response, ':') + 1, -1);
+        $price = number_format(substr($response, strpos($response, ':') + 1, -1), 16, '.', '');
+
+        //$price = substr($response, strpos($response, ':') + 1, -1);
         return bcmul($amount, $price, 16);
     }
 }
